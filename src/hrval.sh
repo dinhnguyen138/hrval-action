@@ -30,16 +30,18 @@ function download {
   CHART_DIR=${2}/${CHART_NAME}
 
   CHART_REPO_MD5=`/bin/echo $CHART_REPO | /usr/bin/md5sum | cut -f1 -d" "`
-
+  HELM_APP=helm
   if [[ ${HELM_VER} == "v3" ]]; then
-    helmv3 repo add ${CHART_REPO_MD5} ${CHART_REPO}
-    helmv3 repo update
-    helmv3 fetch --version ${CHART_VERSION} --untar ${CHART_REPO_MD5}/${CHART_NAME} --untardir ${2}
-  else
-    helm repo add ${CHART_REPO_MD5} ${CHART_REPO}
-    helm repo update
-    helm fetch --version ${CHART_VERSION} --untar ${CHART_REPO_MD5}/${CHART_NAME} --untardir ${2}
+    HELM_APP=helmv3
   fi
+  
+  if [[ ${CHART_REPO} = *"charts.cdgfossil.com"* ]]; then
+    ${HELM_APP} repo add ${CHART_REPO_MD5} ${CHART_REPO} --username ${CHART_MUSEUM_USER} --password ${CHART_MUSEUM_PASSWD}
+  else
+    ${HELM_APP} repo add ${CHART_REPO_MD5} ${CHART_REPO}
+  fi
+  ${HELM_APP} repo update
+  ${HELM_APP} fetch --version ${CHART_VERSION} --untar ${CHART_REPO_MD5}/${CHART_NAME} --untardir ${2}
 
   echo ${CHART_DIR}
 }
